@@ -8,7 +8,7 @@ import { Input } from "./Input";
 const Login = () => {
   const [inputs, setInputs] = useState({
     username: "",
-    password: ""
+    password: "",
   });
 
   const { username, password } = inputs;
@@ -17,15 +17,15 @@ const Login = () => {
 
   const dispatch = useDispatch();
 
-  const loggingIn = useSelector(state => state.authentication.loggingIn);
+  const loggingIn = useSelector((state) => state.authentication.loggingIn);
 
   useEffect(() => {
     dispatch(userActions.logout());
-  }, []);
+  }, [dispatch]);
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setInputs(inputs => ({ ...inputs, [name]: value }));
+    setInputs((inputs) => ({ ...inputs, [name]: value }));
   }
 
   function handleSubmit(e) {

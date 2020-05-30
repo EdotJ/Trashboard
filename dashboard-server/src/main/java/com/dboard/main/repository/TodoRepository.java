@@ -10,13 +10,15 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TodoRepository extends JpaRepository<Todo, Long> {
-    Optional<Todo> findById(Long noteId);
+    Optional<Todo> findById(Long todoId);
 
-    Page<Todo> findByCreatedBy(Long userId, Pageable pageable);
+    List<Todo> findByCreatedBy(Long userId);
 
     long countByCreatedBy(Long userId);
 
-    List<Todo> findByIdIn(List<Long> noteIds);
+    List<Todo> findByIdIn(List<Long> todoIds);
 
-    List<Todo> findByIdIn(List<Long> noteIds, Sort sort);
+    List<Todo> findByIdIn(List<Long> todoIds, Sort sort);
+
+    Optional<Todo> findByWebKeyAndCreatedBy(Long webKey, Long userId);
 }

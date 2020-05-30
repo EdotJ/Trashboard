@@ -6,7 +6,9 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -24,11 +26,11 @@ public class User extends DateAudit {
     private long id;
 
     @NotBlank
-    @Size(max=15)
+    @Size(max = 15)
     private String username;
 
     @NotBlank
-    @Size(max=100)
+    @Size(max = 100)
     private String password;
 
     @NaturalId
@@ -43,7 +45,8 @@ public class User extends DateAudit {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    public User() { }
+    public User() {
+    }
 
     public User(String username, String password, String email, String passwordConfirm) {
         this.username = username;

@@ -1,0 +1,9 @@
+ALTER TABLE todos
+DROP FOREIGN KEY FK_todo_widget;  
+
+ALTER TABLE todos
+    ADD CONSTRAINT FK_todo_widget
+        FOREIGN KEY (widget_id) REFERENCES widgets(id);
+
+ALTER TABLE todos MODIFY id bigint(20) NOT NULL AUTO_INCREMENT;
+ALTER TABLE notes MODIFY id bigint(20) NOT NULL AUTO_INCREMENT;

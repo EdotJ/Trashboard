@@ -4,9 +4,13 @@ import com.dboard.main.model.Role;
 import com.dboard.main.model.RoleName;
 import com.dboard.main.model.User;
 import com.dboard.main.payload.*;
+import com.dboard.main.payload.User.UserIdentityAvailability;
+import com.dboard.main.payload.Weather.Forecasts.Response;
 import com.dboard.main.repository.RoleRepository;
 import com.dboard.main.repository.UserRepository;
 import com.dboard.main.security.JwtTokenProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +25,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -31,6 +38,7 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     final PasswordEncoder passwordEncoder;
 
@@ -68,17 +76,20 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationRequest registrationRequest) {
         if(userRepository.existsByUsername(registrationRequest.getUsername())) {
-            return new ResponseEntity(new ApiResponse(false, "Username is already taken!"),
+            logger.info("Username is already taken for: " + registrationRequest.getUsername());
+            return new ResponseEntity(constructError(HttpStatus.BAD_REQUEST, "username", "Username is already taken"),
                     HttpStatus.BAD_REQUEST);
         }
 
         if(userRepository.existsByEmail(registrationRequest.getEmail())) {
-            return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"),
+            logger.info("Email Address already in use: " + registrationRequest.getEmail());
+            return new ResponseEntity(constructError(HttpStatus.BAD_REQUEST, "email", "Email address already in use"),
                     HttpStatus.BAD_REQUEST);
         }
 
         if(!registrationRequest.getPassword().equals(registrationRequest.getPasswordConfirm())) {
-            return new ResponseEntity(new ApiResponse(false, "Passwords don't match!"),
+            logger.info("Passwords dont match: " + registrationRequest.getUsername());
+            return new ResponseEntity(constructError(HttpStatus.BAD_REQUEST, "username", "Passwords do not match."),
                     HttpStatus.BAD_REQUEST);
         }
 
@@ -104,4 +115,36 @@ public class UserController {
 
         return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
     }
+
+    @GetMapping("user/checkUsernameAvailability")
+    public UserIdentityAvailability checkUsernameAvailability(@RequestParam(value = "username") String username) {
+        Boolean isAvailable = !userRepository.existsByUsername(username);
+        return new UserIdentityAvailability(isAvailable);
+    }
+
+    @PostMapping("checkToken")
+    public ResponseEntity<?> validateToken(@Valid @RequestBody JwtTokenRequest request) {
+        if (tokenProvider.validateToken(request.getToken())) {
+            return ResponseEntity.ok(new ApiResponse(true, "JWT Token is valid"));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, "JWT Token is expired"));
+        }
+    }
+
+    private ApiErrorResponse constructError(HttpStatus status, String fieldName, String message) {
+        ApiErrorResponse errorResponse = new ApiErrorResponse();
+        ApiError error = new ApiError();
+        error.setFieldName(fieldName);
+        error.setMessage(message);
+        List<ApiError> errors = Collections.singletonList(error);
+        errorResponse.setErrors(errors);
+        errorResponse.setTimestamp(new Date());
+        errorResponse.setStatus(status);
+        return errorResponse;
+    }
+
+
+
+
+
 }

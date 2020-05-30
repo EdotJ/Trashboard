@@ -15,6 +15,12 @@ public class Todo extends UserDateAudit {
 
     private boolean checked;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "widget_id", referencedColumnName = "id")
+    private Widget widget;
+
+    private Long webKey;
+
     public String getTitle() {
         return title;
     }
@@ -29,5 +35,25 @@ public class Todo extends UserDateAudit {
 
     public void setChecked(boolean checked) {
         this.checked = checked;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Widget getWidget() {
+        return widget;
+    }
+
+    public void setWidget(Widget widget) {
+        this.widget = widget;
+    }
+
+    public Long getWebKey() {
+        return webKey;
+    }
+
+    public void setWebKey(Long webKey) {
+        this.webKey = webKey;
     }
 }

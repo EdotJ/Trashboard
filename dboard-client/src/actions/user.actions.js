@@ -3,23 +3,30 @@ import { userService } from "../services";
 import { history } from "../helpers";
 import { alertActions } from "./alert.actions";
 import { buildErrors } from "../helpers";
+import { weatherActions } from "./weather.actions";
+import { widgetLayoutActions } from "./widgetLayout.actions";
 
 export const userActions = {
   login,
   logout,
-  register
+  register,
+  save,
+  checkUserToken,
 };
 
 function login(username, password) {
-  return dispatch => {
+  return (dispatch) => {
     dispatch(request({ username }));
-
     userService.login(username, password).then(
-      user => {
-        dispatch(success(user));
-        history.push("/");
+      (user) => {
+        userService.getState(dispatch).then(() => {
+          dispatch(success(user));
+          dispatch(weatherActions.fetchAlertDataIfNeeded());
+          dispatch(weatherActions.fetchForecastDataIfNeeded());
+          history.push("/");
+        });
       },
-      error => {
+      (error) => {
         dispatch(failure(error.toString()));
         const errorMessage =
           error.message.toString() === "Bad credentials"
@@ -43,21 +50,27 @@ function login(username, password) {
   }
 }
 
+function checkUserToken() {
+  return (dispatch) => {
+    userService.checkToken(dispatch);
+  };
+}
+
 function logout() {
   userService.logout();
   return { type: userConstants.LOGOUT };
 }
 
 function register(user) {
-  return dispatch => {
+  return (dispatch) => {
     dispatch(request(user));
 
     userService.register(user).then(
-      user => {
+      (user) => {
         dispatch(success());
         history.push("/login");
       },
-      error => {
+      (error) => {
         dispatch(failure(error.toString()));
         dispatch(alertActions.error(buildErrors(error)));
       }
@@ -75,4 +88,14 @@ function register(user) {
   function failure(error) {
     return { type: userConstants.REGISTER_FAILURE, error };
   }
+}
+
+function save() {
+  return (dispatch) => {
+    dispatch(
+      widgetLayoutActions.update(
+        JSON.parse(localStorage.getItem("widgetLayout"))
+      )
+    );
+  };
 }

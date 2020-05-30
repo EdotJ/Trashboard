@@ -1,39 +1,58 @@
 import { widgetsConstants } from "../constants";
-import { v4 as uuidv4 } from "uuid";
+import { widgetService } from "../services";
 
 export const widgetsActions = {
-  add,
+  saveToServer,
   update,
   remove,
   removeAll,
+  addToState,
+  fetchUserWidgets,
+  updateWidgetState,
 };
 
-function add(props, widgetType) {
+function addToState(widget) {
   return {
     type: widgetsConstants.ADD,
-    props,
-    widgetType,
-    id: uuidv4()
+    props: widget.props,
+    widgetType: widget.type,
   };
 }
 
 function update(props, id) {
+  widgetService.updateWidget(id, props);
   return {
     type: widgetsConstants.UPDATE,
     props,
-    id
-  }
+    id,
+  };
 }
 
 function remove(id) {
+  widgetService.deleteWidget(id);
   return {
     type: widgetsConstants.REMOVE,
-    id
+    id,
   };
 }
 
 function removeAll() {
   return {
-    type: widgetsConstants.REMOVE_ALL
+    type: widgetsConstants.REMOVE_ALL,
   };
+}
+
+function saveToServer(id, props, widgetType, layout) {
+  return widgetService.addWidget({ id, widgetType, props, layout });
+}
+
+function fetchUserWidgets() {
+  widgetService.fetchWidgets();
+  return {
+    type: "FETCH_WIDGETS_FROM_SERVER",
+  };
+}
+
+function updateWidgetState(state) {
+  return { type: widgetsConstants.UPDATE_STATE, payload: state };
 }

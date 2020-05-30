@@ -7,7 +7,6 @@ export const Draggable = ({ children, bounds, params, id }) => {
   const dispatch = useDispatch();
 
   const handleDragStop = (e, d) => {
-    console.log(d);
     dispatch(widgetsActions.drag({ ...params, x: d.x, y: d.y }, id));
   };
 
@@ -18,7 +17,7 @@ export const Draggable = ({ children, bounds, params, id }) => {
           ...params,
           height: ref.style.height,
           width: ref.style.width,
-          ...position
+          ...position,
         },
         id
       )

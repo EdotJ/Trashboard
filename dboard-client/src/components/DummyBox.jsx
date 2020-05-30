@@ -1,9 +1,6 @@
 import React from "react";
+import { BaseCard } from "./BaseCard";
 
-export const DummyBox = ({x, y, w, h}) => {
-  console.log(x, y, w, h);
-  return (
-    <div className="drag-div" key="Potato" data-grid={{ x: x, y: y, w: w, h: h }}>I am a dummy dumb dumb</div>
-  )
+export const DummyBox = () => {
+  return <BaseCard dragByTitle={false}>I am a dummy component</BaseCard>;
 };
-
