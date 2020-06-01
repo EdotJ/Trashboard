@@ -1,0 +1,18 @@
+FROM openjdk:11 AS build
+WORKDIR /app
+COPY ./dashboard-server /app
+RUN target=/root/.gradle ./gradlew build
+RUN mkdir -p build/dependency && cd build/dependency && jar -xf ../libs/*.jar
+
+FROM adoptopenjdk/openjdk11:alpine-jre
+
+RUN addgroup -S demo && adduser -S demo -G demo
+USER demo
+
+VOLUME /tmp
+ARG DEPENDENCY=/app/build/dependency
+
+COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
+COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
+COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
+ENTRYPOINT ["java","-cp","app:app/lib/*","com.dboard.main.MainApplication"]

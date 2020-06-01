@@ -6,16 +6,21 @@ import rootReducer from "../reducers";
 const loggerMiddleware = createLogger();
 
 const composeEnhancers =
-  (typeof window !== "undefined" &&
-    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) ||
-  compose;
+  (typeof window !== "undefined" && process.env.NODE_ENV === "development"
+    ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
+    : null) || compose;
 
 export const store = createStore(
   rootReducer,
-  composeEnhancers(applyMiddleware(thunkMiddleware, loggerMiddleware))
+  composeEnhancers(
+    process.env.NODE_ENV === "development"
+      ? applyMiddleware(thunkMiddleware, loggerMiddleware)
+      : applyMiddleware(thunkMiddleware)
+  )
 );
 
 store.subscribe(() => {
+  console.log(process.env.NODE_ENV);
   saveLayout(store);
   saveWidgets(store);
   saveTodos(store);

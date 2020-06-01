@@ -1,26 +1,51 @@
-# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+version: "3.7"
 
-version: '3.7'
 services:
-  # Frontend Service
-  app-client:
-    image: bitnami/node:12
-    command: "sh -c 'npm install && npm start'"
-    ports:
-      - 80:3000
-    volumes:
-      - ./dboard-client:/app
-
-  # Database Service (Mysql)
   db:
     image: mysql:5.7
+    container_name: database
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: dboard
+      MYSQL_DATABASE: dashboard
       MYSQL_USER: root
       MYSQL_PASSWORD: root
       MYSQL_ROOT_PASSWORD: root
-# Volumes
-volumes:
-  db-data:
+    networks:
+      - backend
+
+  app-server:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.server
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - backend
+      - frontend
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+      - DATABASE_NAME=dashboard
+      - DATABASE_PORT=3306
+
+  app-client:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.clientdev
+      args:
+        REACT_APP_API_BASE_URL: http://127.0.0.1:8080/api
+    ports:
+      - "80:80"
+    restart: always
+    depends_on:
+      - app-server
+    networks:
+      - frontend
+
+networks:
+  backend:
+  frontend:
